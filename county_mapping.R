@@ -1,4 +1,5 @@
 # Load required packages
+# some of these packages we don't need
 library(ggplot2)
 library(rgdal)
 library(maptools)
