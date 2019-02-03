@@ -15,7 +15,7 @@ library(reshape2)
 library(gridExtra)
 library(grid)
 
-# Step 2: import and prepare data --------------------------------------------
+# Step 2: import shapefile data ----------------------------------------------
 # Download a shapefile for kenya and save it in the directory (folder) you
 # are working in. 
 # The shapefile we are using is available here: 
@@ -34,13 +34,19 @@ kenya.df = left_join(kenya.points, kenya@data, by="id")
 nyandarua.df <- kenya.df[kenya.df$COUNTY=="Nyandarua",]
 keiyo.marakwet.df <- kenya.df[kenya.df$COUNTY=="Keiyo-Marakwet",]
 
+# Step 3: import and merge your data -----------------------------------------
+# Your data folders also need to be in the directory you're working from
 # read in data tables for plotting
 cyst_data <- read.csv("cyst_collection_data.csv")
 metadata <- read.csv("sampling_metadata.csv")
 
 # data tables can be merged so long as they share a column with the same
 # heading which contains common values e.g. sample IDs.
+# Note: this is case sensitive! 
 all.data <- merge(cyst_data, metadata, by = "Sample.code")
+
+# write out the merged file. 
+write.csv(all.data, "collection_merged_with_metadata.csv")
 
 # select rows in your dataset based on the value in a specified column.
 nyandarua_cyst <- all.data[all.data$County.x=="Nyandarua",]
@@ -59,7 +65,7 @@ kenya.df$potato.production[kenya.df$COUNTY == "Nyandarua"] <- TRUE
 kenya.df$potato.production[kenya.df$COUNTY == "Taita Taveta"] <- TRUE
 kenya.df$potato.production[kenya.df$COUNTY == "Keiyo-Marakwet"] <- TRUE
 
-# Step 3: plot a base map ----------------------------------------------------
+# Step 4: plot a base map ----------------------------------------------------
 # Plot a map of Kenya with counties coloured by the value of the 
 # potato production we created above.
 map <- ggplot() + geom_polygon(data = kenya.df,
@@ -78,6 +84,16 @@ map
 # to avoid losing resolution when the image is enlarged.
 ggsave("Kenya_county_potato_production_map.svg", dpi=600, width=7, height =6)
 
+# Plot the same map without axes. 
+map <- ggplot() + geom_polygon(data = kenya.df,
+                               aes(x = long,
+                                   y = lat,
+                                   group = group,
+                                   fill = potato.production),
+                               colour = "black") +
+                               theme_void()
+
+map
 
 # Step 4: add points to your base map ----------------------------------------
 # As long as you have latitude/longitude values you can add these points to
@@ -120,3 +136,4 @@ p2 = p1 + geom_point(mapping = aes(Longitude_2, Latitude_2,
                      shape = 21,
                      data=nyandarua_cyst)
 p2
+
